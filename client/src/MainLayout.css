@@ -1,0 +1,12 @@
+/* src/MainLayout.css */
+
+.app-layout {
+  display: flex;
+}
+
+.content-area {
+  flex-grow: 1;
+  margin-left: 260px; /* Same as sidebar width */
+  background-color: #f8f9fa; /* Light grey background for content */
+  min-height: 100vh;
+}
