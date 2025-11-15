@@ -105,6 +105,20 @@ db.serialize(() => {
     // Ignore error if column already exists
   });
 
+  // Add criminal specific columns for jail and wanted status
+  db.run(`ALTER TABLE criminals ADD COLUMN jail_name TEXT`, (err) => {
+    // Ignore error if column already exists
+  });
+  db.run(`ALTER TABLE criminals ADD COLUMN last_location_seen TEXT`, (err) => {
+    // Ignore error if column already exists
+  });
+  db.run(`ALTER TABLE criminals ADD COLUMN assigned_officer_id INTEGER`, (err) => {
+    // Ignore error if column already exists
+  });
+  // Add foreign key constraint for assigned_officer_id if it doesn't exist
+  // Note: SQLite doesn't support adding foreign key constraints after table creation
+  // So we'll just ensure the column exists and handle the relationship in application code
+
   // Create default admin user
   const adminPassword = bcrypt.hashSync('admin123', 10);
   db.run(`INSERT OR IGNORE INTO users (aadhar_id, name, email, password, role, status) 
@@ -382,7 +396,14 @@ app.get('/api/criminals/search', authenticateToken, (req, res) => {
     return res.status(400).json({ error: 'Aadhar ID is required for search' });
   }
 
-  let query = `SELECT c.*, u.name as officer_name FROM criminals c LEFT JOIN users u ON c.arresting_officer_id = u.id WHERE c.aadhar_id = ?`;
+  let query = `SELECT c.*, 
+               u.name as officer_name,
+               ao.name as assigned_officer_name,
+               ao.designation as assigned_officer_designation
+               FROM criminals c 
+               LEFT JOIN users u ON c.arresting_officer_id = u.id 
+               LEFT JOIN users ao ON c.assigned_officer_id = ao.id
+               WHERE c.aadhar_id = ?`;
   
   // Regular users can only see arrested/convicted criminals
   if (req.user.role === 'user') {
@@ -410,7 +431,14 @@ app.get('/api/criminals/search/name', authenticateToken, (req, res) => {
     return res.status(400).json({ error: 'Name is required for search' });
   }
 
-  let query = `SELECT c.*, u.name as officer_name FROM criminals c LEFT JOIN users u ON c.arresting_officer_id = u.id WHERE c.name LIKE ?`;
+  let query = `SELECT c.*, 
+               u.name as officer_name,
+               ao.name as assigned_officer_name,
+               ao.designation as assigned_officer_designation
+               FROM criminals c 
+               LEFT JOIN users u ON c.arresting_officer_id = u.id 
+               LEFT JOIN users ao ON c.assigned_officer_id = ao.id
+               WHERE c.name LIKE ?`;
   let params = [`%${name.trim()}%`];
   
   // Regular users can only see arrested/convicted criminals

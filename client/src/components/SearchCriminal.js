@@ -69,47 +69,98 @@ function SearchCriminal() {
     }
   };
 
-  const renderCriminalDetails = (criminalData) => (
-    <div className="criminal-details">
-      <div className="details-grid">
-        <div className="detail-item">
-          <strong>Aadhar ID:</strong> {criminalData.aadhar_id}
-        </div>
-        <div className="detail-item">
-          <strong>Name:</strong> {criminalData.name}
-        </div>
-        <div className="detail-item">
-          <strong>Age:</strong> {criminalData.age || 'N/A'}
-        </div>
-        <div className="detail-item">
-          <strong>Gender:</strong> {criminalData.gender || 'N/A'}
-        </div>
-        <div className="detail-item">
-          <strong>Address:</strong> {criminalData.address || 'N/A'}
-        </div>
-        <div className="detail-item">
-          <strong>Crime Type:</strong> {criminalData.crime_type}
-        </div>
-        <div className="detail-item">
-          <strong>Crime Details:</strong> {criminalData.crime_details || 'N/A'}
-        </div>
-        <div className="detail-item">
-          <strong>Crime Date:</strong> {criminalData.crime_date ? new Date(criminalData.crime_date).toLocaleDateString() : 'N/A'}
-        </div>
-        <div className="detail-item">
-          <strong>Status:</strong> 
-          <span className={`status-${criminalData.status.toLowerCase()}`}>
-            {criminalData.status}
-          </span>
-        </div>
-        {criminalData.officer_name && (
+  const renderCriminalDetails = (criminalData) => {
+    const isWanted = criminalData.status === 'wanted';
+    const isArrestedOrConvicted = criminalData.status === 'arrested' || criminalData.status === 'convicted';
+    
+    return (
+      <div className="criminal-details">
+        <div className="details-grid">
           <div className="detail-item">
-            <strong>Arresting Officer:</strong> {criminalData.officer_name}
+            <strong>Aadhar ID:</strong> {criminalData.aadhar_id}
           </div>
-        )}
+          <div className="detail-item">
+            <strong>Name:</strong> {criminalData.name}
+          </div>
+          <div className="detail-item">
+            <strong>Age:</strong> {criminalData.age || 'N/A'}
+          </div>
+          <div className="detail-item">
+            <strong>Gender:</strong> {criminalData.gender || 'N/A'}
+          </div>
+          <div className="detail-item">
+            <strong>Address:</strong> {criminalData.address || 'N/A'}
+          </div>
+          <div className="detail-item">
+            <strong>Crime Type:</strong> {criminalData.crime_type}
+          </div>
+          <div className="detail-item">
+            <strong>Crime Details:</strong> {criminalData.crime_details || 'N/A'}
+          </div>
+          <div className="detail-item">
+            <strong>Crime Date:</strong> {criminalData.crime_date ? new Date(criminalData.crime_date).toLocaleDateString() : 'N/A'}
+          </div>
+          <div className="detail-item">
+            <strong>Status:</strong> 
+            <span className={`status-${criminalData.status.toLowerCase()}`}>
+              {criminalData.status}
+            </span>
+          </div>
+          
+          {/* Show jail information if arrested or convicted */}
+          {isArrestedOrConvicted && criminalData.jail_name && (
+            <div className="detail-item" style={{ backgroundColor: '#e0f2fe', padding: '15px', borderRadius: '6px', marginTop: '10px' }}>
+              <strong style={{ color: '#0369a1', display: 'block', marginBottom: '5px' }}>📍 Current Location:</strong>
+              <span style={{ fontSize: '16px', color: '#0c4a6e' }}>Jail: {criminalData.jail_name}</span>
+            </div>
+          )}
+          
+          {/* Show wanted information if wanted */}
+          {isWanted && (
+            <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#fef3c7', borderRadius: '6px', border: '2px solid #f59e0b' }}>
+              <strong style={{ color: '#92400e', display: 'block', marginBottom: '10px', fontSize: '16px' }}>⚠️ WANTED CRIMINAL INFORMATION:</strong>
+              
+              {criminalData.last_location_seen && (
+                <div className="detail-item" style={{ marginBottom: '10px' }}>
+                  <strong style={{ color: '#78350f' }}>Last Location Seen:</strong>
+                  <span style={{ marginLeft: '10px', color: '#92400e', fontSize: '15px' }}>
+                    {criminalData.last_location_seen}
+                  </span>
+                </div>
+              )}
+              
+              {criminalData.assigned_officer_name ? (
+                <div className="detail-item">
+                  <strong style={{ color: '#78350f' }}>Assigned Officer to Catch:</strong>
+                  <div style={{ marginLeft: '10px', marginTop: '5px' }}>
+                    <span style={{ color: '#92400e', fontSize: '15px', fontWeight: '600' }}>
+                      {criminalData.assigned_officer_name}
+                    </span>
+                    {criminalData.assigned_officer_designation && (
+                      <span style={{ color: '#92400e', fontSize: '14px', marginLeft: '8px', fontStyle: 'italic' }}>
+                        ({criminalData.assigned_officer_designation})
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="detail-item">
+                  <strong style={{ color: '#78350f' }}>Assigned Officer:</strong>
+                  <span style={{ marginLeft: '10px', color: '#92400e' }}>Not assigned yet</span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {criminalData.officer_name && !isWanted && (
+            <div className="detail-item">
+              <strong>Arresting Officer:</strong> {criminalData.officer_name}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="search-criminal">
